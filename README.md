@@ -3,7 +3,7 @@ content = """# 🛠️ L-Manager
 
 > PHP Web File Manager - Manage your source code easily.
 
-![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4)
+![PHP](https://img.shields.io/badge/PHP-7.1%2B-777BB4)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
@@ -32,6 +32,7 @@ Designed for developers who need a simple web interface to:
 - ✅ Delete File
 - ✅ Folder Navigation
 - ✅ PHP Support
+- ✅ DB View Edit
 
 ---
 
@@ -39,10 +40,11 @@ Designed for developers who need a simple web interface to:
 
 ```text
 l-manager/
-├── index.php
-├── classes/
-├── manager/
+├── api
 ├── asset/
-├── images/
-├── socket/
-└── config.php
+├── db/
+├── icon/
+├── javascript/
+├── source/
+├── system
+└── index.php
