@@ -1,9 +1,11 @@
 ## 🚧 Status
 
 This project is currently under development.
+
 New features and improvements are still being added.
 
 from pathlib import Path
+
 content = """# 🛠️ L-Manager
 
 > PHP Web File Manager - Manage your source code easily.
