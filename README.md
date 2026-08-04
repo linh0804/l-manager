@@ -1,2 +1,0 @@
-# l-manager
-manager editor
