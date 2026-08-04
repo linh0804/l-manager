@@ -1,0 +1,721 @@
+<?php
+defined('ACCESS') or exit;
+use Nightmare\Fs;
+use Nightmare\Http\Http;
+use Nightmare\Http\Request;
+use Nightmare\Zip;
+
+function request(): Request {
+    static $instance = null;
+
+    if ($instance === null) {
+        $instance = new Request();
+    }
+
+    return $instance;
+}
+
+function file_name_valid($var) {
+    return strpos((string) $var, '\\') !== false || strpos((string) $var, '/') !== false;
+}
+
+
+function str_replace_first($needle, $replace, $haystack) {
+    $pos = strpos((string) $haystack, (string) $needle);
+
+    if ($pos !== false) {
+        return substr_replace($haystack, $replace, $pos, strlen((string) $needle));
+    }
+
+    return $haystack;
+}
+
+// chi dung de doc tat ca file
+function read_full_dir($path, $excludes = []) {
+    $directory = new RecursiveDirectoryIterator(
+        $path,
+        FilesystemIterator::UNIX_PATHS
+        | FilesystemIterator::SKIP_DOTS
+    );
+
+    $filter = new RecursiveCallbackFilterIterator($directory, function ($current, $key, $iterator) use ($path, $excludes) {
+        $relativePath = str_replace_first($path, '', $current->getPathname());
+
+        foreach ($excludes as $exclude) {
+            if (empty($exclude)) {
+                continue;
+            }
+            //var_dump($relativePath);
+            //var_dump($exclude);
+
+            $exclude = trim($exclude);
+            $exclude = trim($exclude, '/');
+            $relativePath = trim($relativePath, '/');
+
+            if (str_ends_with($relativePath, $exclude)) {
+                return false;
+            }
+        }
+
+        return true;
+    });
+
+    return new RecursiveIteratorIterator(
+        $filter,
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+}
+
+function count_string_array($array, $search, $isLowerCase = false) {
+    $count = 0;
+
+    if ($array != null && is_array($array)) {
+        foreach ($array as $entry) {
+            if ($isLowerCase) {
+                $entry = strtolower((string) $entry);
+            }
+
+            if ($entry == $search) {
+                ++$count;
+            }
+        }
+    }
+
+    return $count;
+}
+
+function is_url($url) {
+    return filter_var($url, FILTER_VALIDATE_URL);
+}
+
+function is_in_array($array, $search, $isLowerCase) {
+    if ($array == null || !is_array($array)) {
+        return false;
+    }
+
+    foreach ($array as $entry) {
+        if ($isLowerCase) {
+            $entry = strtolower((string) $entry);
+        }
+
+        if ($entry == $search) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function file_import($path, $url, $timeout = 0) {
+    $fp = fopen($path, 'wb');
+
+    if ($fp === false) {
+        return false;
+    }
+
+    $ch = curl_init($url);
+
+    curl_setopt_array($ch, [
+        CURLOPT_FILE => $fp,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_TIMEOUT => $timeout,
+        CURLOPT_FAILONERROR => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => false,
+    ]);
+
+    $ok = curl_exec($ch);
+    //curl_close($ch);
+    fclose($fp);
+
+    return $ok;
+}
+
+function is_app_file($dir) {
+    return stripos((string) $dir, ROOT_PATH) === 0;
+}
+
+function response(...$args) {
+    Http::response(...$args)->send();
+    exit;
+}
+
+function run_command($command) {
+    $descriptorspec = [
+        0 => ["pipe", "r"],  // stdin
+        1 => ["pipe", "w"],  // stdout
+        2 => ["pipe", "w"]   // stderr
+    ];
+
+    // Mở tiến trình
+    $process = proc_open($command, $descriptorspec, $pipes);
+
+    if (is_resource($process)) {
+        // Đọc đầu ra từ stdout
+        $output = stream_get_contents($pipes[1]);
+        fclose($pipes[1]); // Đóng luồng stdout
+
+        // Đọc lỗi từ stderr
+        $error = stream_get_contents($pipes[2]);
+        fclose($pipes[2]); // Đóng luồng stderr
+
+        // Đóng tiến trình
+        $return_value = proc_close($process);
+
+        // Hiển thị kết quả
+        return [
+            'out' => $output,
+            'err' => $error,
+            'code' => $return_value
+        ];
+    } else {
+        return false;
+    }
+}
+
+
+function create_tmp_file(string $name, bool $random = true) {
+    $prefix = APP_NAME . '_' . $name;
+
+    if ($random) {
+        return tempnam(sys_get_temp_dir(), $prefix . '_');
+    }
+
+    return sys_get_temp_dir() . '/' . $prefix;
+}
+
+function sort_natural(&$items) {
+    usort($items, function ($a, $b) {
+        $a_is_letter = ctype_alpha($a[0]);
+        $b_is_letter = ctype_alpha($b[0]);
+        return $a_is_letter === $b_is_letter
+            ? strnatcmp($a, $b)
+            : ($a_is_letter ? 1 : -1);
+    });
+}
+
+function process_directory($var, $seSlash = false) {
+    if (empty($var)) {
+        return '';
+    }
+
+    $var = str_replace('\\', '/', $var);
+    $var = preg_replace('#/\./#', '//', $var);
+    $var = preg_replace('#/\.\./#', '//', $var);
+    $var = preg_replace('#/\.{1,2}$#', '//', $var);
+    $var = preg_replace('|/{2,}|', '/', $var);
+    $var = preg_replace('|(.+?)/$|', '$1', $var);
+
+    // thêm / vào đầu và cuối
+    if ($seSlash) {
+        $var = trim($var, '/');
+        $var = '/' . $var . '/';
+    }
+
+    return $var;
+}
+
+function multi_remove($entrys, $dir) {
+    foreach ($entrys as $e) {
+        if (!Fs::remove($dir . '/' . $e)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+function function_can_use(...$func) {
+    foreach ($func as $f) {
+        if (function_exists($f) == false || function_disabled($f)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function file_can_format_code($path) {
+    $ext = file_get_ext(basename($path));
+    return in_array($ext, [
+        'php',
+        'html',
+        'js',
+        'ts',
+        'css',
+        'scss',
+        'json',
+        'yaml'
+    ]);
+}
+
+
+function function_disabled($func) {
+    $list = @ini_get('disable_functions');
+
+    if (empty($list) == false) {
+        $func = strtolower(trim((string) $func));
+        $list = explode(',', $list);
+
+        foreach ($list as $e) {
+            if (strtolower(trim($e)) == $func) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function paging(
+    string $id,
+    string $page_id,
+    array $params,
+    int $curr_page,
+    int $total_items,
+    int $page_size
+): string {
+    if ($page_size <= 0) {
+        return '';
+    }
+
+    $total = (int) ceil($total_items / $page_size);
+    $current = $curr_page < 1 || $curr_page > $total ? 1 : $curr_page;
+
+    if ($total <= 1) {
+        return '';
+    }
+
+    $link = static function (int $target_page, string $class, string $text) use ($id, $page_id, $params): string {
+        return '<a href="' . action_link($id, array_merge($params, [$page_id => $target_page])) . '" class="' . $class . '">' . $text . '</a>';
+    };
+    $html = '<div class="page">';
+    $center = PAGE_NUMBER - 2;
+
+    if ($total <= PAGE_NUMBER) {
+        for ($i = 1; $i <= $total; ++$i) {
+            if ($current === $i) {
+                $html .= '<strong class="current">' . $i . '</strong>';
+            } else {
+                $html .= $link($i, 'other', (string) $i);
+            }
+        }
+    } else {
+        if ($current === 1) {
+            $html .= '<strong class="current">1</strong>';
+        } else {
+            $html .= $link(1, 'other', '1');
+        }
+
+        if ($current > $center) {
+            $i = $current - $center < 1 ? 1 : $current - $center;
+            $html .= $link($i, 'text', '...');
+        }
+
+        $offset = [];
+
+        if ($current <= $center) {
+            $offset['start'] = 2;
+        } else {
+            $offset['start'] = $current - ($current > $total - $center ? $current - ($total - $center) : floor($center >> 1));
+        }
+
+        if ($current >= $total - $center + 1) {
+            $offset['end'] = $total - 1;
+        } else {
+            $offset['end'] = $current + ($current <= $center ? ($center + 1) - $current : floor($center >> 1));
+        }
+
+        for ($i = $offset['start']; $i <= $offset['end']; ++$i) {
+            if ($current === $i) {
+                $html .= '<strong class="current">' . $i . '</strong>';
+            } else {
+                $html .= $link($i, 'other', (string) $i);
+            }
+        }
+
+        if ($current < $total - $center + 1) {
+            $html .= $link($current + $center > $total ? $total : $current + $center, 'text', '...');
+        }
+
+        if ($current === $total) {
+            $html .= '<strong class="current">' . $total . '</strong>';
+        } else {
+            $html .= $link($total, 'other', (string) $total);
+        }
+    }
+
+    return $html . '</div>';
+}
+
+
+function paging_arr(array $arr, int $page, int $page_size): array {
+    if ($page_size <= 0) {
+        return $arr;
+    }
+
+    $total_pages = (int) ceil(count($arr) / $page_size);
+
+    if ($page < 1 || $page > $total_pages) {
+        $page = 1;
+    }
+
+    $offset = ($page - 1) * $page_size;
+
+    return array_slice($arr, $offset, $page_size);
+}
+
+function file_get_ext($name) {
+    return strrchr((string) $name, '.') !== false
+        ? strtolower(str_replace('.', '', strrchr((string) $name, '.')))
+        : '';
+}
+
+function file_get_chmod($path) {
+    $perms = @fileperms($path);
+
+    if ($perms !== false) {
+        $perms = decoct($perms);
+        $perms = substr($perms, strlen($perms) == 5 ? 2 : 3, 3);
+    } else {
+        $perms = 0;
+    }
+
+    return $perms;
+}
+
+function file_get_icon(string $path): string {
+    if (is_dir($path)) {
+        return 'icon/folder.png';
+    }
+
+    $name = basename($path);
+    $type = file_get_ext($name);
+    $icon = 'unknown';
+
+    if (in_array($type, COMMON_FILE_FORMAT['other'])) {
+        $icon = $type;
+    } elseif (in_array($type, COMMON_FILE_FORMAT['text'])) {
+        $icon = $type;
+    } elseif (in_array($type, COMMON_FILE_FORMAT['archive'])) {
+        $icon = $type;
+    } elseif (in_array($type, COMMON_FILE_FORMAT['audio'])) {
+        $icon = $type;
+    } elseif (in_array($type, COMMON_FILE_FORMAT['font'])) {
+        $icon = $type;
+    } elseif (in_array($type, COMMON_FILE_FORMAT['binary'])) {
+        $icon = $type;
+    } elseif (in_array($type, COMMON_FILE_FORMAT['document'])) {
+        $icon = $type;
+    } elseif (in_array($type, COMMON_FILE_FORMAT['image'])) {
+        $icon = 'image';
+    } elseif (in_array(
+        strtolower(strpos($name, '.') !== false ? substr($name, 0, strpos($name, '.')) : $name),
+        COMMON_FILE_FORMAT['source']
+    )) {
+        $icon = strtolower(strpos($name, '.') !== false ? substr($name, 0, strpos($name, '.')) : $name);
+    }
+
+    return home('icon/mime/' . $icon . '.png');
+}
+
+function file_get_icon_display(string $path): string {
+    return '<img src="' . file_get_icon($path) . '"/>';
+}
+
+function file_get_display_link($file) {
+    global $pages;
+
+    $path = $file->getPathname();
+    $file_dir = $file->isDir() ? $file->getPathname() : dirname($file->getPathname());
+    $name = $file->getFilename();
+    $is_edit = false;
+
+    $file_icon = file_get_icon_display($path);
+
+    if ($file->isFile()) {
+        if (in_array(file_get_ext($name), COMMON_FILE_FORMAT['text'])) {
+            $is_edit = true;
+        } elseif (in_array(
+            strtolower(strpos($name, '.') !== false ? substr($name, 0, strpos($name, '.')) : $name),
+            COMMON_FILE_FORMAT['source']
+        )) {
+            $is_edit = true;
+        } elseif (file_is_unknown($name)) {
+            $is_edit = true;
+        }
+
+        if (strtolower($file->getFilename()) === 'error_log' || $is_edit) {
+            $file_link = action_link('file/edit_text', ['path' => base64url_encode($file->getPathname())]);
+        } elseif (in_array(file_get_ext($name), COMMON_FILE_FORMAT['zip'])) {
+            $file_link = action_link('file/unzip', ['path' => $file->getPathname()]);
+        } else {
+            $file_link = action_link('file/rename', ['path' => $path]);
+        }
+    } else {
+        $file_link = action_link('file/rename', ['path' => $path]);
+    }
+
+    $file_icon = sprintf('<a href="%s">%s</a>', $file_link, $file_icon);
+
+    if (is_app_file($path)) {
+        $name_display = '<span style="color: red !important">' . $name . '</span>';
+    } else {
+        $name_display = $name;
+    }
+
+    if ($file->isLink()) {
+        $name_display = '<span style="color:darkcyan">' . $name_display . '</span>';
+    }
+
+    return sprintf(
+        '%s <a href="%s">%s</a>',
+        $file_icon,
+        $file->isDir() ? action_link(null, ['path' => $file_dir, 'page_list' => null]) : action_link('file/info', ['path' => $path]),
+        $name_display
+    );
+}
+
+function file_is_text($name) {
+    $format = file_get_ext($name);
+
+    if (in_array($format, COMMON_FILE_FORMAT['text']) || in_array($format, COMMON_FILE_FORMAT['other'])) {
+        return true;
+    }
+
+    $basename = strtolower(
+        strpos($name, '.') !== false
+            ? substr($name, 0, strpos($name, '.'))
+            : $name
+    );
+
+    return in_array($basename, COMMON_FILE_FORMAT['source']);
+}
+
+function base64url_encode(string $data): string {
+    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+function base64url_decode(string $data): string {
+    return base64_decode(strtr($data, '-_', '+/'));
+}
+
+function get_curr_path() {
+    $path = request()->has_post('path')
+        ? request()->post('path')
+        : request()->query('path');
+    $path = (string) $path;
+
+    if (!empty($path) && $path[0] !== '/') {
+        $path = base64url_decode($path);
+    }
+
+    return $path;
+}
+
+function check_path($path, $type = '')
+{
+    extract($GLOBALS);
+
+    if ($type == 'file') {
+        $name = 'Tập tin';
+
+        if (@is_file($path)) {
+            return false;
+        }
+    } else if ($type == 'folder') {
+        $name = 'Thư mục';
+
+        if (@is_dir($path)) {
+            return false;
+        }
+    } else {
+        $name = 'Đường dẫn';
+
+        if (@file_exists($path)) {
+            return false;
+        }
+    }
+    $out = '';
+    $site_title = 'Lỗi - ' . $path;
+    $out .= '<div class="card-body">' . file_print_path($path, true) . '</div>';
+    $out .= '<div class="notice_failure">' . $name . ' <b><i>bị hệ thống chặn</i></b> hoặc <b><i>không tồn tại</i></b>!</div>';
+    $out .= '<br>';
+    return $out;
+}
+
+
+
+function home($url) {
+    return '/' . MANAGER_NAME .'/' . $url;
+}
+
+function post($name, $replace = false) {
+    return $_POST[$name] ?? $replace;
+}
+
+function postJson($name, $child, $replace = false) {
+    return $_POST[$name][$child] ?? $replace;
+}
+
+function get($name, $replace = false) {
+    return $_GET[$name] ?? $replace;
+}
+
+function files($name, $replace = false) {
+    return $_FILES[$name] ?? $replace;
+}
+
+function is_submit() {
+    return $_POST['submit'] ?? false;
+}
+function config() {
+    static $instance = null;
+
+    if ($instance === null) {
+        $instance = new FmConfig(APP_CONFIG_FILE);
+    }
+    return $instance;
+}
+
+
+// ========
+// auth
+//
+function auth_login_file() {
+    return __DIR__ . '/tmp_login_' . md5(request()->ip());
+}
+
+function auth_get_login_fail() {
+    $file = auth_login_file();
+    if (!is_file($file)) {
+            return 0;
+    }
+
+    if (filemtime($file) + 3600 < time()) {
+        @unlink($file);
+        return 0;
+    }
+
+    return (int) file_get_contents($file);
+}
+
+function auth_increase_login_fail() {
+    $count = auth_get_login_fail() + 1;
+    file_put_contents(auth_login_file(), (string) $count, LOCK_EX);
+}
+
+function auth_reset_fail_login() {
+    $file = auth_login_file();
+    if (is_file($file)) {
+        unlink($file);
+    }
+}
+
+function auth_can_login() {
+    return auth_get_login_fail() < LOGIN_MAX;
+}
+
+function redirect($url) {
+    header('Location: ' . $url);
+    exit;
+}
+
+function action_link(string $name = null, array $params = []): string {
+    $link = home('index.php' . (($name != null) ? '/' . $name : ''));
+    // Tự động giữ trang danh sách hiện tại nếu link chưa chỉ định trang khác.
+    // Truyền page_list => null để chủ động bỏ phân trang khỏi URL.
+    if (!array_key_exists('page_list', $params) && get('page_list')) {
+        $params['page_list'] = get('page_list');
+    }
+
+    $query = http_build_query($params, '', '&', PHP_QUERY_RFC3986);
+
+    return $query === '' ? $link : $link . '?' . $query;
+}
+
+function file_print_path(string $path, bool $isHrefEnd = false)
+{
+    $html = '';
+
+    if ($path && $path != '/' && strpos($path, '/') !== false) {
+        $array = explode('/', (string) preg_replace('|^/(.*?)$|', '\1', $path));
+        $item  = null;
+        $url   = null;
+
+        foreach ($array as $key => $entry) {
+            if ($key === 0) {
+                $seperator = preg_match('|^\/(.*?)$|', $path) ? '/' : null;
+                $item      = $seperator . $entry;
+            } else {
+                $item = '/' . $entry;
+            }
+
+            if ($key < count($array) - 1 || ($key == count($array) - 1 && $isHrefEnd)) {
+                $html .= '<span class="path_seperator">/</span><a href="' . action_link(null, ['path' => $url . $item, 'page_list' => null]) . '">';
+            } else {
+                $html .= '<span class="path_seperator">/</span>';
+            }
+
+            $url  .= $item;
+            $html .= '<span class="path_entry">' . $entry . '</span>';
+
+            if ($key < count($array) - 1 || ($key == count($array) - 1 && $isHrefEnd)) {
+                $html .= '</a>';
+            }
+        }
+    }
+
+    return $html;
+}
+
+function file_is_unknown($name) {
+    $format = file_get_ext($name);
+
+    if (empty($format)) {
+        return true;
+    }
+
+    foreach (COMMON_FILE_FORMAT as $array) {
+        if (in_array($format, $array)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function file_display_actions($filename) {
+    global $pages;
+
+    $file = new SplFileInfo($filename);
+    $path = $file->getPathname();
+    $name = $file->getFilename();
+    $ext = file_get_ext($name);
+    $dir = dirname($path);
+
+    echo '<div class="title">Chức năng</div>';
+    echo '<ul class="list">';
+
+    if ($file->isFile()) {
+        if (in_array($ext, COMMON_FILE_FORMAT['zip'])) {
+            echo '<li><img src="'. home('icon/unzip.png') .'"/> <a href="' . action_link('file/zip_view', ['path' => $path]) . '">Xem</a></li>
+              <li><img src="'. home('icon/unzip.png') .'"/> <a href="' . action_link('file/unzip', ['path' => $path]) . '">Giải nén</a></li>';
+        } elseif (file_is_text($name) || file_is_unknown($name)) {
+            echo '<li><img src="'. home('icon/edit.png') .'"/> <a href="' . action_link('file/edit_text', ['path' => base64url_encode($path)]) . '">Sửa văn bản</a></li>
+              <li><img src="'. home('icon/edit_text_line.png') .'"/> <a href="' . action_link('file/edit_code', ['path' => $path]) . '">Sửa code</a></li>
+               <li><img src="'. home('icon/edit_text_line.png') .'"/> <a href="' . action_link('file/edit_text_line', ['path' => $path]) . '">Sửa theo dòng</a></li>
+              <li><img src="'. home('icon/columns.png') .'"/> <a href="' . action_link('file/view_code', ['path' => $path]) . '">Xem code</a></li>';
+        }
+        echo '<li><img src="'. home('icon/download.png') .'"/> <a href="' . action_link('file/download', ['path' => $path]) . '">Tải về</a></li>';
+    } else {
+        echo '<li><img src="'. home('icon/zip.png') .'"/> <a href="' . action_link('folder_zip', ['dir' => $dir, 'name' => $name]) . '">Nén zip</a></li>';
+    }
+
+    echo '<li><img src="'. home('icon/rename.png') .'"/> <a href="' . action_link('file/rename', ['path' => $path]) . '">Đổi tên</a></li>';
+    echo '<li><img src="'. home('icon/copy.png') .'"/> <a href="' . action_link('file/copy', ['path' => $path]) . '">Sao chép</a></li>';
+    echo '<li><img src="'. home('icon/move.png') .'"/> <a href="' . action_link('file/move', ['path' => $path]) . '">Di chuyển</a></li>';
+    echo '<li><img src="'. home('icon/access.png') .'"/> <a href="' . action_link('file/chmod', ['path' => $path]) . '">Chmod</a></li>';
+    echo '<li><img src="'. home('icon/delete.png') .'"/> <a href="' . action_link('file/delete', ['path' => $path]) . '">Xóa</a></li>';
+    echo '<li><img src="'. home('icon/info.png') .'"/> <a href="' . action_link('file/info', ['path' => $path]) . '">Thông tin</a></li>';  
+    echo '</ul>';
+}

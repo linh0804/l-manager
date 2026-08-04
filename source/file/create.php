@@ -1,0 +1,64 @@
+<?php
+
+defined('ACCESS') or exit;
+$site_title = 'Tạo mới';
+$error = '';
+$curr_path = get_curr_path();
+$curr_file = new SplFileInfo($curr_path);
+$act = get('act') ?? '';
+
+
+if (check_path($curr_path)) {
+     echo check_path($curr_path);
+     echo '</div>';
+     return;     
+}
+if (isset($_POST['submit'])) {
+    $newDir = $curr_path . '/' . $_POST['name'];
+    
+    $error .= '<div class="notice_failure">';
+
+    if (empty($_POST['name'])) {
+        $error .= 'Chưa nhập đầy đủ thông tin';
+    } else if (file_exists($newDir)) {
+        $error .= 'Tên đã tồn tại dạng thư mục hoặc tập tin';
+    } else if (file_name_valid($_POST['name'])) {
+        $error .= 'Tên không hợp lệ';
+    } else {
+        if (intval($_POST['type']) === 0) {
+            if (!@mkdir($newDir))
+                $error .= 'Tạo thư mục thất bại';
+            else
+                redirect(action_link(null, ['path' => $curr_path]));
+        } else if (intval($_POST['type']) === 1) {
+            if (@file_put_contents($newDir, '') === false)
+                $error .= 'Tạo tập tin thất bại';
+            else
+                redirect(action_link(null, ['path' => $curr_path]));
+        } else {
+            $error .= 'Lựa chọn không hợp lệ';
+        }
+    }
+
+    $error .= '</div>';
+}
+
+
+
+echo '<div class="title">' . $site_title . '</div>';
+
+echo $error;
+
+echo '<div class="list">
+    <span>' . file_print_path($curr_path, true) . '</span><hr/>
+    <form action="" method="post">
+        <span class="bull">&bull; </span>Tên:<br/>
+        <input type="text" name="name" value="' . ($_POST['name'] ?? null) . '" size="18"/><br/>
+        <button name="type" value="1" class="button"><img src="icon/file.png" alt=""/> Tập tin</button>
+        <button name="type" value="0" class="button"><img src="icon/folder.png" alt=""/> Thư mục </button>
+        <input type="hidden" name="submit" value="1" />
+    </form>
+</div>';
+?>
+
+<?php

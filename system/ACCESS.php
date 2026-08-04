@@ -1,0 +1,1 @@
+<?php defined('ACCESS') or exit; ?>
