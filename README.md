@@ -1,3 +1,7 @@
+## 🙏 Credits
+
+Special thanks to **Ngatngay aka Phetuyco** for the inspiration and ideas behind this project.
+
 ## 🚧 Status
 
 This project is currently under development.
@@ -47,7 +51,7 @@ Designed for developers who need a simple web interface to:
 
 ```text
 l-manager/
-├── api
+├── api/
 ├── asset/
 ├── db/
 ├── icon/
