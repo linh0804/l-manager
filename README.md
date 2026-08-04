@@ -1,3 +1,8 @@
+## 🚧 Status
+
+This project is currently under development.
+New features and improvements are still being added.
+
 from pathlib import Path
 content = """# 🛠️ L-Manager
 
