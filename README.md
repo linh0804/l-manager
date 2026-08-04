@@ -57,5 +57,5 @@ l-manager/
 ├── icon/
 ├── javascript/
 ├── source/
-├── system
+├── system/
 └── index.php
