@@ -700,7 +700,7 @@ function file_is_unknown($name) {
 
 function file_display_actions($filename) {
     global $pages;
-   // if(empty($filename)) return;
+    if(empty($filename)) return;
     $file = new SplFileInfo($filename);
     $path = $file->getPathname();
     $name = $file->getFilename();
