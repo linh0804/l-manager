@@ -1,0 +1,71 @@
+<?php
+
+use Nightmare\Fs; 
+defined('ACCESS') or exit;
+
+$curr_path = get_curr_path();
+$curr_file = new SplFileInfo($curr_path);
+
+if (check_path($curr_path)) {
+     echo check_path($curr_path);
+     echo '</div>';
+     return;     
+}
+
+
+$error = '';
+$site_title = 'Giải nén tập tin';
+$file = new SplFileInfo($curr_path);
+$format = file_get_ext(basename($curr_path));
+$path_unzip = request()->post('path_unzip', dirname((string) $curr_path));
+$is_delete = request()->has_post('is_delete');
+
+
+
+
+echo '<div class="title">' . $site_title . '</div>';
+
+if (!in_array($format, array('zip', 'jar'))) {
+    echo '<div class="list"><span>Tập tin không phải zip</span></div>';
+} else {
+    if (request()->is_method('post')) {
+        $error .= '<div class="notice_failure">';
+
+        if (empty($path_unzip)) {
+            $error .= 'Chưa nhập đầy đủ thông tin';
+        } elseif (!is_dir($path_unzip)) {
+            $error .= 'Đường dẫn giải nén không tồn tại';
+        } else {
+            $zip = new ZipArchive();
+
+            if ($zip->open($curr_path) === true) {
+                $zip->extractTo($path_unzip);
+                $zip->close();
+
+                if ($is_delete) {
+                    Fs::remove($curr_path);
+                }
+
+                redirect(action_link(null, ['path' => dirname((string) $curr_path)]));
+            } else {
+                $error .= 'Giải nén tập tin lỗi';
+            }
+        }
+
+        $error .= '</div>';
+    }
+    
+    echo $error;
+
+    echo '<div class="list">
+        <span class="bull">&bull;</span><span>' . file_print_path($curr_path) . '</span><hr/>
+        <form method="post">
+            <span class="bull">&bull;</span>Đường dẫn giải nén:<br/>
+            <input type="text" name="path_unzip" value="' . $path_unzip . '"/><br/>
+            <input type="checkbox" name="is_delete" value="1"' . ($is_delete ? ' checked="checked"' : '') . '/> Xóa tập tin zip<br/>
+            <input type="submit" name="submit" value="Giải nén"/>
+        </form>
+    </div>';
+    
+    file_display_actions($curr_path);
+}

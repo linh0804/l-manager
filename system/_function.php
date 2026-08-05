@@ -19,6 +19,20 @@ function file_name_valid($var) {
     return strpos((string) $var, '\\') !== false || strpos((string) $var, '/') !== false;
 }
 
+function process_path_zip($var) {
+    if (empty($var)) {
+        $var = '';
+    }
+
+    $var = str_replace('\\', '/', $var);
+    $var = preg_replace('#/\./#', '//', $var);
+    $var = preg_replace('#/\.\./#', '//', $var);
+    $var = preg_replace('#/\.{1,2}$#', '//', $var);
+    $var = preg_replace('|/{2,}|', '/', $var);
+    $var = preg_replace('|/?(.+?)/?$|', '$1', $var);
+
+    return $var;
+}
 
 function str_replace_first($needle, $replace, $haystack) {
     $pos = strpos((string) $haystack, (string) $needle);
@@ -686,7 +700,7 @@ function file_is_unknown($name) {
 
 function file_display_actions($filename) {
     global $pages;
-
+   // if(empty($filename)) return;
     $file = new SplFileInfo($filename);
     $path = $file->getPathname();
     $name = $file->getFilename();
@@ -703,19 +717,9 @@ function file_display_actions($filename) {
         } elseif (file_is_text($name) || file_is_unknown($name)) {
             echo '<li><img src="'. home('icon/edit.png') .'"/> <a href="' . action_link('file/edit_text', ['path' => base64url_encode($path)]) . '">Sửa văn bản</a></li>
               <li><img src="'. home('icon/edit_text_line.png') .'"/> <a href="' . action_link('file/edit_code', ['path' => $path]) . '">Sửa code</a></li>
-               <li><img src="'. home('icon/edit_text_line.png') .'"/> <a href="' . action_link('file/edit_text_line', ['path' => $path]) . '">Sửa theo dòng</a></li>
               <li><img src="'. home('icon/columns.png') .'"/> <a href="' . action_link('file/view_code', ['path' => $path]) . '">Xem code</a></li>';
         }
         echo '<li><img src="'. home('icon/download.png') .'"/> <a href="' . action_link('file/download', ['path' => $path]) . '">Tải về</a></li>';
-    } else {
-        echo '<li><img src="'. home('icon/zip.png') .'"/> <a href="' . action_link('folder_zip', ['dir' => $dir, 'name' => $name]) . '">Nén zip</a></li>';
-    }
-
-    echo '<li><img src="'. home('icon/rename.png') .'"/> <a href="' . action_link('file/rename', ['path' => $path]) . '">Đổi tên</a></li>';
-    echo '<li><img src="'. home('icon/copy.png') .'"/> <a href="' . action_link('file/copy', ['path' => $path]) . '">Sao chép</a></li>';
-    echo '<li><img src="'. home('icon/move.png') .'"/> <a href="' . action_link('file/move', ['path' => $path]) . '">Di chuyển</a></li>';
-    echo '<li><img src="'. home('icon/access.png') .'"/> <a href="' . action_link('file/chmod', ['path' => $path]) . '">Chmod</a></li>';
-    echo '<li><img src="'. home('icon/delete.png') .'"/> <a href="' . action_link('file/delete', ['path' => $path]) . '">Xóa</a></li>';
-    echo '<li><img src="'. home('icon/info.png') .'"/> <a href="' . action_link('file/info', ['path' => $path]) . '">Thông tin</a></li>';  
+    } 
     echo '</ul>';
 }

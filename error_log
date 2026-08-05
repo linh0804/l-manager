@@ -1,0 +1,5 @@
+[05-Aug-2026 16:15:17 Asia/Ho_Chi_Minh] PHP Fatal error:  Uncaught Error: Call to undefined function act_link() in /home/phetuyco/domains/linh.ngatngay.net/public/l-manager/source/file/unzip.php:49
+Stack trace:
+#0 /home/phetuyco/domains/linh.ngatngay.net/public/l-manager/index.php(11): require_once()
+#1 {main}
+  thrown in /home/phetuyco/domains/linh.ngatngay.net/public/l-manager/source/file/unzip.php on line 49

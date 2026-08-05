@@ -17,10 +17,17 @@ function get_entries() {
 }
 
 function get_input(name) {
-    return $('input[name="' + name + '[]"]').map(function () {
-        return this.value;
-    }).get();
+    let input = $('input[name="' + name + '"]');
+
+    if (name.endsWith('[]')) {
+        return input.map(function () {
+            return this.value;
+        }).get();
+    }
+
+    return input.val();
 }
+
 function get_select(entries) {
     var out = '<ul class="list">';
     $.each(entries, function(i, value) {
@@ -153,7 +160,42 @@ deleteButton.on('click', function(e) {
     });
 });
 
+//chmod
+chmodButton.on('click', function(e) {
+    e.preventDefault();
+    var entries = get_entries();
+    let chmod_list = '';
 
+   
+
+    const chmod_html = `${get_select(entries)}
+    <span class="path_seperator">${$(this).attr('path')}</span><br />
+    <span class="bull">&bull; </span>Thư mục:<br/>
+    <input type="text" name="folder" value="755" size="18"/><br/>
+    <span class="bull">&bull; </span>Tập tin:<br/>
+    <input type="text" name="file" value="644" size="18"/><br/>            
+    <input name="path" id="box_input" type="hidden" value="null" />
+    `;
+    create_box('Chmod', chmod_html, entries, $(this).attr('path'), 'file-chmod', function(url, data_post, new_path = false) {
+        if(new_path.length) data_post = {...data_post, new_path};
+        var folder = get_input('folder');
+        var file = get_input('file');
+        data_post = {...data_post, folder, file};
+        fm_ajax({
+            url: url,
+            content: data_post
+        }, function (data) {
+            if (data.error) {                
+                createBox(data.error);
+                return;
+            }
+            if(data.status) {
+                $('.overlay_box').last().remove();
+                alert_box('Đã thực hiện thành công.<br> Bạn có muốn tải lại trang không?');
+            }
+        });
+    });
+});
 
 
 //rname
@@ -182,7 +224,7 @@ rnameButton.on('click', function(e) {
     `;
     create_box('Đổi tên', rname_html, entries, $(this).attr('path'), 'file-rname', function(url, data_post, new_path = false) {
         if(new_path.length) data_post = {...data_post, new_path};
-        var modifier = get_input('modifier');
+        var modifier = get_input('modifier[]');
         data_post = {...data_post, modifier};
         fm_ajax({
             url: url,

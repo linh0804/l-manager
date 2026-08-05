@@ -1,4 +1,6 @@
 <?php
+defined('ACCESS') or exit;
+
 $header_goto_path = get_curr_path();
 $site_sidebar = '';
 if (IS_LOGIN) {
