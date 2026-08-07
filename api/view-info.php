@@ -1,22 +1,20 @@
-<?php 
-defined('ACCESS') or exit;
-
+<?php
 use Nightmare\Fs;
+define('ACCESS', true);
 
-$curr_path = get_curr_path();
+require dirname(__DIR__) . '/system/_init.php';
+
+$curr_path = postJson('content', 'path');
+
 $curr_file = new SplFileInfo($curr_path);
-$act = get('act') ?? '';
 
-$site_title = 'File';
+$is_file = '';
+$file_name = basename($curr_path);
 
 if (check_path($curr_path)) {
      echo check_path($curr_path);
      return;     
 }
-
-$is_file = '';
-$file_name = basename($curr_path);
-$site_title = 'Thông tin: ' . basename($curr_path);
 
 if (is_file($curr_path)) {
     $format = file_get_ext(basename($curr_path));
@@ -36,9 +34,7 @@ if (is_file($curr_path)) {
         $is_file .= '<li><span class="bull">&bull; </span><strong>Độ phân giải</strong>: <span>' . $pixel[0] . 'x' . $pixel[1] . '</span></li>';
     }
 }
-
 ?>
-<div class="card-body"><?= file_print_path($curr_path, true) ?></div>
 <ul class="info">
     <li><span class="bull">&bull; </span><strong>Tên</strong>: <span style="color: red"><?= $file_name ?></span></li>
     <?= $is_file ?>
@@ -47,5 +43,3 @@ if (is_file($curr_path)) {
     <li><span class="bull">&bull; </span><strong>Ngày tạo</strong>: <span><?= date('d.m.Y - H:i:s', filectime($curr_path)) ?></span></li>
     <li><span class="bull">&bull; </span><strong>Ngày sửa</strong>: <span><?= date('d.m.Y - H:i:s', filemtime($curr_path)) ?></span></li>
 </ul>
-<?php
-file_display_actions($curr_path);

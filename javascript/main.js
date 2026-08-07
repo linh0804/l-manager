@@ -10,6 +10,12 @@ $('#file-select-all').on('change', function () {
     }
 });
 
+function input_select(name) {
+    $('input[name="entries[]"]').prop('checked', false);
+
+    $('input[value="'+ name +'"]').prop('checked', true);
+}
+
 function get_entries() {
     return $('form input[name="entries[]"]:checked').map(function () {
         return this.value;
@@ -38,12 +44,12 @@ function get_select(entries) {
     return out;
 }
 
-var copyButton = $('#mutil_copy');
-var moveButton = $('#mutil_move');
-var zipButton = $('#mutil_zip');
-var deleteButton = $('#mutil_delete');
-var chmodButton = $('#mutil_chmod');
-var rnameButton = $('#mutil_rename');
+const copyButton = $('#mutil_copy');
+const moveButton = $('#mutil_move');
+const zipButton = $('#mutil_zip');
+const deleteButton = $('#mutil_delete');
+const chmodButton = $('#mutil_chmod');
+const rnameButton = $('#mutil_rename');
 
 
 //copy
@@ -68,7 +74,7 @@ copyButton.on('click', function(e) {
             }
             if(data.status) {
                 $('.overlay_box').last().remove();
-                alert_box('Đã thực hiện thành công.<br> Bạn có muốn tải lại trang không?');
+                location.reload()
             }
         });
     });
@@ -96,7 +102,7 @@ moveButton.on('click', function(e) {
             }
             if(data.status) {
                 $('.overlay_box').last().remove();
-                alert_box('Đã thực hiện thành công.<br> Bạn có muốn tải lại trang không?');
+                location.reload()
             }
         });
     });
@@ -127,7 +133,7 @@ zipButton.on('click', function(e) {
             }
             if(data.status) {
                 $('.overlay_box').last().remove();
-                alert_box('Đã thực hiện thành công.<br> Bạn có muốn tải lại trang không?');
+                location.reload()
             }
         });
     });
@@ -154,7 +160,7 @@ deleteButton.on('click', function(e) {
             }
             if(data.status) {
                 $('.overlay_box').last().remove();
-                alert_box('Đã thực hiện thành công.<br> Bạn có muốn tải lại trang không?');
+                location.reload()
             }
         });
     });
@@ -191,7 +197,7 @@ chmodButton.on('click', function(e) {
             }
             if(data.status) {
                 $('.overlay_box').last().remove();
-                alert_box('Đã thực hiện thành công.<br> Bạn có muốn tải lại trang không?');
+                location.reload()
             }
         });
     });
@@ -243,8 +249,156 @@ rnameButton.on('click', function(e) {
             }
             if(data.status) {
                 $('.overlay_box').last().remove();
-                alert_box('Đã thực hiện thành công.<br> Bạn có muốn tải lại trang không?');
+                location.reload()
             }
         });
     });
+});
+
+
+
+// menu-file
+let currentMenu = null;
+let currentView = null;
+
+$(".more-btn").on("click", function(e) {
+    e.stopPropagation();
+
+    // đóng box cũ
+    if (currentMenu) {
+        currentMenu.remove();
+        currentMenu = null;
+    }
+
+    let btn = $(this);
+    let isEdit = btn.data('is_edit');
+    let isZip = btn.data('is_zip');
+    let type = btn.data('type');
+    let open = btn.data('open');
+    let name = btn.data('name');
+    let path = btn.data('path');
+
+    let pos = btn.offset();
+    input_select(name);
+    let box = $(`
+        <div class="menu-box">
+            ${ (isEdit || type == 'folder') ? `<div><a href="${ open }">${ (type == 'folder') ? 'Mở' : 'Sửa' }</a></div>` : '' }
+            ${ (isEdit) ? `<div><a href="${ btn.data('open_code') }">Sửa code</a></div>` : '' }
+            ${ (isEdit) ? `<div class="boxViewCode">Xem code</div>` : '' }
+            ${ (isZip) ? `<div><a href="${ btn.data('zip_view') }">Xem</a></div><div><a href="${ btn.data('unzip') }">Giải nén</a></div>` : '' }
+            ${ (type == 'file') ? `<div>Download</div>` : '' }
+            <div class="boxRname">Đổi tên</div>
+            <div class="boxCopy">Sao chép</div>
+            <div class="boxMove">Di chuyển</div>
+            <div class="boxZip">Nén zip</div>
+            <div class="boxDelete" style="color:#ff7777">Xóa</div>
+            <div class="boxInfo">Thông tin</div>
+        </div>
+    `);
+    
+    $("body").append(box);
+
+
+    let boxView = $(`
+        <div class="overlay_box">
+            <div class="box_container">
+                <div class="box_name"></div>
+                <div class="box-content"></div>
+                <div class="box_button">
+                    <button class="btn_close">Đóng</button>
+                </div>
+            </div>
+        </div>
+    `);
+
+    box.on('click', '.boxRname', function () {
+        rnameButton.trigger('click');
+    });
+    box.on('click', '.boxCopy', function () {
+        copyButton.trigger('click');
+    });
+    box.on('click', '.boxMove', function () {        
+        moveButton.trigger('click');
+    });
+    box.on('click', '.boxZip', function () {
+        zipButton.trigger('click');
+    });
+    box.on('click', '.boxDelete', function () {
+        deleteButton.trigger('click');
+    });
+    box.on('click', '.boxInfo', function () {
+        if (currentView) {
+            currentView.remove();
+            currentView = null;
+        }
+        boxView.find('.box_name').text('Thông tin '+ name);
+        fm_ajax({
+            url: "view-info",
+            content: {'path': path}
+        }, function (data) {
+           boxView.find('.box-content').html(data);
+        });
+        $("body").append(boxView);
+        currentView = boxView;
+    });
+
+
+     box.on('click', '.boxViewCode', function () {
+        if (currentView) {
+            currentView.remove();
+            currentView = null;
+        }
+        boxView.find('.box_name').text('Xem code '+ name);
+        fm_ajax({
+            url: "view-code",
+            content: {'path': path}
+        }, function (data) {
+           boxView.find('.box-content').html(data);
+        });
+        $("body").append(boxView);
+        currentView = boxView;
+    });
+
+
+
+
+    // đặt box dưới bên phải nút ...
+    box.css({
+        top: pos.top + btn.outerHeight() - 10,
+        left: pos.left - box.outerWidth() + btn.outerWidth()
+    });
+
+    currentMenu = box;
+});
+
+$(document).on("click", function(e) {
+    if (currentMenu && 
+        !$(e.target).closest(".menu-box, .more-btn").length &&
+        !$(e.target).closest(".box_container").length
+    ) {
+        currentMenu.remove();
+        currentMenu = null;
+    }
+    if (currentView &&
+        !$(e.target).closest(".menu-box div").length &&
+        !$(e.target).closest(".box_container").length
+    ) {
+        currentView.remove();
+        currentView = null;
+    }
+});
+
+    
+
+
+$('body').delegate('.btn_close','click', function () {
+     $('.overlay_box').last().remove();
+     if (currentMenu) {
+        currentMenu.remove();
+        currentMenu = null;
+    }
+    if (currentView) {
+        currentView.remove();
+        currentView = null;
+    }
 });

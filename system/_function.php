@@ -481,10 +481,20 @@ function file_get_display_link($file) {
         $name_display = '<span style="color:darkcyan">' . $name_display . '</span>';
     }
 
+    if($file->isDir()) {
+        $link_file = action_link(null, ['path' => $file_dir, 'page_list' => null]);
+    } else {
+        if($is_edit) {
+            $link_file = action_link('file/edit_text', ['path' => $path]);
+        } else {
+            $link_file = action_link('file/info', ['path' => $path]);
+        }
+    }
+
     return sprintf(
         '%s <a href="%s">%s</a>',
         $file_icon,
-        $file->isDir() ? action_link(null, ['path' => $file_dir, 'page_list' => null]) : action_link('file/info', ['path' => $path]),
+        $link_file,
         $name_display
     );
 }

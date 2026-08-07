@@ -43,8 +43,10 @@ if (IS_LOGIN) {
 
     <script src="<?= home('asset/nightmare-scrolltop.js?t='. time()) ?>"></script>
     <script src="<?= home('asset/edit_recent.js?t='. time()) ?>"></script>
-    <script src="<?= home('asset/app.js?t='. time()) ?>" defer="defer"></script>
+    <script src="<?= home('asset/app.js?t='. time()) ?>" defer></script>
 
+    <link rel="stylesheet" type="text/css" href="<?= home('asset/style.css?t=' . time()) ?>" media="all,handheld" />
+    <?php if (IS_LOGIN) { ?>
     <script>
         $(document).on("ajaxStart", function() {
             NProgress.start();
@@ -56,11 +58,8 @@ if (IS_LOGIN) {
             NProgress.done();
         });
     </script>
-
-    <link rel="stylesheet" type="text/css" href="<?= home('asset/style.css?t=' . time()) ?>" media="all,handheld" />
-    <?php if (IS_LOGIN) { ?>
     <link rel="stylesheet" type="text/css" href="<?= home('asset/app_header_path_autocomplete.css') ?>" />
-    <script src="<?= home('asset/app_header_path_autocomplete.js?t='. time()) ?>"></script>
+    <script src="<?= home('asset/app_header_path_autocomplete.js?t='. time()) ?>" defer></script>
     <?php } ?>
 </head>
 <body>
@@ -81,7 +80,7 @@ if (IS_LOGIN) {
     </ul>
     <?php if (IS_LOGIN) { ?>
         <form id="header-goto-path-form" action="<?= action_link(null, ['page_list' => null]) ?>" method="get">
-            <input id="header-goto-path" name="path" type="text" value="<?= htmlspecialchars($header_goto_path) ?>" />
+            <input id="header-goto-path" name="path" type="search" value="<?= htmlspecialchars($header_goto_path) ?>" />
             <input type="submit" value="GO" />
         </form>
     <?php } ?>

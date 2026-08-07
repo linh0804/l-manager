@@ -6,7 +6,6 @@ $curr_file = new SplFileInfo($curr_path);
 
 if (check_path($curr_path)) {
      echo check_path($curr_path);
-     echo '</div>';
      return;     
 }
 

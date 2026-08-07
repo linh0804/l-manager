@@ -26,7 +26,48 @@ body {
 }
 
 
+.more-btn, .menu-box div {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    outline: none;
+}
 
+.box-view {
+    height: max-content;
+    top: 55px;
+    position: fixed;
+    z-index: 999;
+    width: 90%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: black;
+    border-radius: 7px;
+    padding: 10px 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,.4);
+    padding: 10px;
+}
+
+.menu-box {
+    position: absolute;
+    z-index: 999;
+    width: 180px;
+    background: #fff;
+    color: black;
+    border-radius: 12px;
+    padding: 10px 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,.4);
+}
+
+.menu-box div {
+    padding: 12px 20px;
+    cursor: pointer;
+}
+
+.menu-box div:hover {
+    background: rgba(255,255,255,.1);
+}
 
 /* Box */
 .overlay_box {
@@ -34,7 +75,6 @@ body {
     inset: 0;
     background: rgba(0,0,0,.45);
     z-index: 9998;
-
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -43,13 +83,17 @@ body {
 
 /* Box lúc xuất hiện */
 .box_container {
-    width: 350px;
+    z-index: 9997;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    max-height: calc(100vh - 24px);
     background: white;
     border-radius: 12px;
     padding: 20px;
-
     box-shadow: 0 10px 30px rgba(0,0,0,.3);
-
+    max-height: 700px;
     animation: slideDown .3s ease forwards;
 }
 
@@ -71,6 +115,7 @@ body {
 }
 
 .box_content {
+    z-index: -9995;
     max-height: 400px;
     font-size: 14px;
     color: #666;   
@@ -1067,3 +1112,8 @@ table.list-file tr:hover {
     margin-top: 25px;
 }
 
+.box-content {
+    z-index: 9991;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}

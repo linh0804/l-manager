@@ -17,6 +17,7 @@ if (IS_LOGIN) {
         <li><img src="'. home('icon/mime/unknown.png') .'"/> <a href="' . action_link('command', ['path' => $curr_path]) . '">Chạy lệnh</a></li>
         <li><img src="'. home('icon/mime/unknown.png') .'"/> <a href="' . action_link('composer', ['path' => $curr_path]) . '">Chạy lệnh Composer</a></li>
         <li><img src="'. home('icon/mime/unknown.png') .'"/> <a href="' . action_link('file_fix_perms', ['path' => $curr_path]) . '">Fix chown/chmod</a></li>
+        <li><img src="'. home('icon/rows.png') .'"/> <a href="'. action_link('webdav.php/'.ltrim($curr_path, '/')) .'">Webdav</a></li>
         <li><img src="'. home('icon/mime/php.png') .'"/> <a href="' . action_link('phpinfo') . '">phpinfo()</a></li>
     </ul>';
     

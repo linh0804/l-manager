@@ -1,4 +1,5 @@
+<?php defined('ACCESS') or exit; ?>
 {
     "username": "admin",
-    "password": "84b89b0a11cfb02cac0758f550d4c8e7"
+    "password": "1dd532c4d82c2117eec0b31f0401bb3a"
 }

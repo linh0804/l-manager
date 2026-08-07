@@ -8,7 +8,6 @@ $site_title = 'File';
 
 if (check_path($curr_path)) {
      echo check_path($curr_path);
-     echo '</div>';
      return;     
 }
 if (

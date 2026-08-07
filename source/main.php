@@ -71,7 +71,7 @@ if (PAGE_SIZE <= 0) {
 
 <a href="<?= action_link(null, ['path' => dirname($curr_path), 'page_list' => null]) ?>">
   <div class="list">
-    <img src="icon/back.png" style="margin-left: 5px; margin-right: 5px"/> 
+    <img src="<?= home('icon/back.png') ?>" style="margin-left: 5px; margin-right: 5px"/> 
     <strong class="back">...</strong>
   </div>
 </a>
@@ -83,7 +83,7 @@ if (PAGE_SIZE <= 0) {
 <form action="" method="post" name="form">
 
 <?php if ($count <= 0): ?>
-    <div class="list"><img src="icon/empty.png"/> <span class="empty">Không có thư mục hoặc tập tin</span></div>
+    <div class="list"><img src="<?= home('icon/empty.png') ?>"/> <span class="empty">Không có thư mục hoặc tập tin</span></div>
 <?php else:
     $display_lists = paging_arr($lists, $page_list, PAGE_SIZE);
 ?>
@@ -92,23 +92,63 @@ if (PAGE_SIZE <= 0) {
             <?php foreach ($display_lists as $entry_path):
                 $file = new SplFileInfo($entry_path);
                 $name = $file->getFilename();
-                $perms = file_get_chmod($file->getPathname());
+                $perms = file_get_chmod($name);
+                $file_dir = $file->isDir() ? $file->getPathname() : dirname($file->getPathname());
+                $ext = file_get_ext($file->getPathname());
+                $is_edit = false;
+                $is_zip = false;
+                if ($file->isFile()) {
+                    if (in_array($ext, COMMON_FILE_FORMAT['zip'])) {
+                        $is_zip = true;
+                    }
+                    if (in_array(file_get_ext($name), COMMON_FILE_FORMAT['text'])) {
+                        $is_edit = true;
+                    } elseif (in_array(
+                        strtolower(strpos($name, '.') !== false ? substr($name, 0, strpos($name, '.')) : $name),
+                        COMMON_FILE_FORMAT['source']
+                    )) {
+                        $is_edit = true;
+                    } elseif (file_is_unknown($name)) {
+                        $is_edit = true;
+                    }
+                }
             ?>
             <tr>
                 <td><input type="checkbox" name="entries[]" value="<?= $name ?>"/></td>
-       
-                <?php if ($file->isDir()): ?>
-                    <td class="name"><b><?= file_get_display_link($file) ?></b></td>
+                <td class="name file-item">
+                    <b><?= file_get_display_link($file) ?></b>
+                    <span class="more-btn"
+                    data-name="<?= $name ?>"
+                    data-is_edit="<?= (($is_edit) ? '1' : '0') ?>"
+                    data-is_zip="<?= (($is_zip) ? '1' : '0') ?>"
+                    <?= (($is_zip) ? 'data-zip_view="'. action_link('file/zip_view', ['path' => $file->getPathname()]) .'"                   
+                    data-unzip="'. action_link('file/unzip', ['path' => $file->getPathname()]) .'"' : '') ?>
+                    data-type="<?= (($file->isDir()) ? 'folder' : 'file') ?>"
+                    data-path="<?= $curr_path ?>/<?= $name ?>"
+                    data-open="<?= (($file->isDir()) ? action_link(null, ['path' => $file_dir, 'page_list' => null]) : action_link('file/edit_text', ['path' => base64url_encode($file->getPathname())])) ?>",
+                    <?= (($is_edit) ? 'data-open_code="'. action_link('file/edit_code', ['path' => base64url_encode($file->getPathname())]) .'"' : '') ?>
+                    style="
+                        float: right;
+                        font-size: 20px;
+                        border: 0;
+                        padding: 0 5px;
+                        background: transparent;
+                        cursor: pointer;
+                    ">⋮</span>
+                </td>
+                <?php /* if ($file->isDir()): ?>
+                    <td class="name"><?= file_get_display_link($file) ?></td>
                     <td><span data-act="calc" data-path="<?= $file->getPathname() ?>" class="btn-calc-size size">[...]</span></td>
-                <?php else: ?>
+                <?php //else: ?>
                     <td class="name"><?= file_get_display_link($file) ?></td>
                     <td><span class="size"><?= (($file->isReadable())
                         ? Fs::sizen($file->getSize())
                         : '-') ?></span></td>
-                <?php endif; ?>
-
-                <td class="chmod"><?= (($file->isReadable()) ? Fs::get_owner_name_by_id($file->getOwner()) : '-') ?></td>
+                <?php //endif; ?> 
+                    <td class="chmod"><?= (($file->isReadable()) ? Fs::get_owner_name_by_id($file->getOwner()) : '-') ?></td> 
+                
                 <td><a href="<?= action_link('file/chmod', ['path' => $file->getPathname()]) ?>" class="chmod"><?= $perms ?></a></td>
+                <?php */ ?>
             </tr>
             <?php endforeach; ?>
             <tr>
@@ -138,11 +178,10 @@ if (PAGE_SIZE <= 0) {
 <div class="card-body">Chức năng</div>
 
 <ul class="list">
-    <li><a href="<?= action_link('file/create', ['path' => $curr_path]) ?>"><img src="icon/create.png"/> Tạo mới</a></li>
-    <li><a href="<?= action_link('file/upload', ['path' => $curr_path]) ?>"><img src="icon/upload.png"/> Tải lên</a></li>
-    <li><a href="<?= action_link('file/import', ['path' => $curr_path]) ?>"><img src="icon/import.png"/> Nhập khẩu</a></li>
-    <li><a href="<?= action_link('file/find_in_folder', ['path' => $curr_path]) ?>"><img src="icon/search.png"/> Tìm trong thư mục</a></li>
-    <li><a href="<?= action_link('webdav.php/'.ltrim($curr_path, '/')) ?>"><img src="icon/rows.png"/> Webdav</a></li>
-    <li><a href="<?= action_link('file/info', ['path' => $curr_path]) ?>"><img src="icon/info.png"/> Thông tin</a></li>
+    <li><a href="<?= action_link('file/create', ['path' => $curr_path]) ?>"><img src="<?= home('icon/create.png') ?>"/> Tạo mới</a></li>
+    <li><a href="<?= action_link('file/upload', ['path' => $curr_path]) ?>"><img src="<?= home('icon/upload.png') ?>"/> Tải lên</a></li>
+    <li><a href="<?= action_link('file/import', ['path' => $curr_path]) ?>"><img src="<?= home('icon/import.png') ?>"/> Nhập khẩu</a></li>
+    <li><a href="<?= action_link('file/find_in_folder', ['path' => $curr_path]) ?>"><img src="<?= home('icon/search.png') ?>"/> Tìm trong thư mục</a></li>
+    <li><a href="<?= action_link('file/info', ['path' => $curr_path]) ?>"><img src="<?= home('icon/info.png') ?>"/> Thông tin</a></li>
 </ul>
 </div>

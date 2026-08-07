@@ -1,7 +1,11 @@
-<?php 
-defined('ACCESS') or exit;
+<?php
 
-$curr_path = get_curr_path();
+define('ACCESS', true);
+
+require dirname(__DIR__) . '/system/_init.php';
+
+$curr_path = postJson('content', 'path');
+
 $curr_file = new SplFileInfo($curr_path);
 
 if (check_path($curr_path)) {
@@ -50,9 +54,6 @@ function detect_code_type($code) {
     }
 }
 
-
-echo '<div class="title">' . $site_title . '</div>';
-
 if (!is_file($curr_path)) {
     echo '<div class="list"><span>Đường dẫn không tồn tại</span></div>
     <div class="title">Chức năng</div>
@@ -71,6 +72,9 @@ if (!is_file($curr_path)) {
 
     echo '<link id="classHl" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs.min.css">
     <style>
+        pre {
+            max-height: calc(100vh - 300px) !important;
+        }
         pre code.hljs {
             line-height: 1.4;
             text-align: left;
@@ -106,14 +110,6 @@ if (!is_file($curr_path)) {
             margin: 0;
         }
     </style>';
-
-    echo '<div class="list">
-        <span class="bull">&bull; </span><span>' . file_print_path($dir, true) . '</span><hr/>
-        <div class="ellipsis break-word">
-            <span class="bull">&bull; </span>Tập tin: <strong class="file_name_edit">' . $name . '</strong>
-        </div>
-    </div>';
-
     echo '<div class="list" id="view_code">
         <div id="line_number">'. $hightlight['line'] .'</div>
         <div id="code_content">
@@ -146,5 +142,5 @@ if (!is_file($curr_path)) {
         </div>';
 
     echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>';   
-    file_display_actions($curr_path);
 }
+

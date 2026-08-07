@@ -18,7 +18,7 @@ if (empty($act) || !file_exists(ROOT_PATH . '/source/file/' . $act . '.php')) {
         <div class="list"><span>Không có hành động</span></div>
         <div class="title">Chức năng</div>
         <ul class="list">
-            <li><img src="icon/list.png" alt=""/> <a href="' . action_link(null, ['path' => $curr_path]) . '">Danh sách</a></li>
+            <li><img src="'. home('icon/list.png') .'" alt=""/> <a href="' . action_link(null, ['path' => $curr_path]) . '">Danh sách</a></li>
         </ul>';
     echo '</div>';
     return;

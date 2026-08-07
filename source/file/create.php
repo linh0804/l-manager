@@ -10,7 +10,6 @@ $act = get('act') ?? '';
 
 if (check_path($curr_path)) {
      echo check_path($curr_path);
-     echo '</div>';
      return;     
 }
 if (isset($_POST['submit'])) {
@@ -54,8 +53,8 @@ echo '<div class="list">
     <form action="" method="post">
         <span class="bull">&bull; </span>Tên:<br/>
         <input type="text" name="name" value="' . ($_POST['name'] ?? null) . '" size="18"/><br/>
-        <button name="type" value="1" class="button"><img src="icon/file.png" alt=""/> Tập tin</button>
-        <button name="type" value="0" class="button"><img src="icon/folder.png" alt=""/> Thư mục </button>
+        <button name="type" value="1" class="button"><img src="'. home('icon/file.png') .'" alt=""/> Tập tin</button>
+        <button name="type" value="0" class="button"><img src="'. home('icon/folder.png') .'" alt=""/> Thư mục </button>
         <input type="hidden" name="submit" value="1" />
     </form>
 </div>';

@@ -21,7 +21,7 @@ if (is_submit()) {
         echo '<div class="notice_failure">Chưa nhập tên đăng nhập</div>';
     } elseif (strlen($username) < 3) {
         echo '<div class="notice_failure">Tên đăng nhập phải lớn hơn 3 ký tự</div>';
-    } elseif (!empty($password_o) && auth_encode_pwd($password_o) != config()->get('password')) {
+    } elseif (!empty($password_o) && md5($password_o) != config()->get('password')) {
         echo '<div class="notice_failure">Mật khẩu cũ không đúng</div>';
     } elseif (!empty($password_o) && (empty($password_n) || empty($password_nr))) {
         echo '<div class="notice_failure">Để thay đổi mật khẩu hãy nhập đủ hai mật khẩu</div>';
@@ -32,7 +32,7 @@ if (is_submit()) {
     } else {
         config()->set([
             'username' => $username,
-            'password' => !empty($password_n) ? auth_encode_pwd($password_n) : config()->get('password'),
+            'password' => !empty($password_n) ? md5($password_n) : config()->get('password'),
         ]);
 
         $username = config()->get('username');
@@ -62,12 +62,12 @@ echo '<form action="" method="post">
     </div>
 </form>';
 
-echo '<div class="tips"><img src="icon/tips.png" alt=""/> Mật khẩu để trống nếu không muốn thay đổi</div>
+echo '<div class="tips"><img src="'. home('icon/tips.png') .'" alt=""/> Mật khẩu để trống nếu không muốn thay đổi</div>
     <div class="title">Chức năng</div>';
 
 echo '<ul class="list">
-  <li><a href="' . action_link('reinstall') . '" class="button"><img src="icon/empty.png" alt=""/> Cài đặt lại!!!</a></li>
+  <li><a href="' . action_link('reinstall') . '" class="button"><img src="'. home('icon/empty.png') .'" alt=""/> Cài đặt lại!!!</a></li>
 </ul>';
 
-echo '<div class="list">Thư mục cài đặt: ' . htmlspecialchars(__DIR__) . '</div>';
+echo '<div class="list">Thư mục cài đặt: ' . htmlspecialchars(dirname(__DIR__)) . '</div>';
 
