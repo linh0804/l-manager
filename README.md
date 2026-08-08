@@ -22,7 +22,7 @@ Công nghệ sử dụng
 
 Backend
 
-- PHP 8+
+- PHP 7+
 - WebDAV
 - Apache / Nginx
 
@@ -34,22 +34,6 @@ Frontend
 - jQuery
 - Highlight.js (hiển thị code)
 
-Cấu trúc dự án
-
-l-manager/
-│
-├── index.php
-├── webdav.php
-├── assets/
-│   ├── css/
-│   ├── js/
-│   └── images/
-│
-├── include/
-├── config/
-├── vendor/
-└── README.md
-
 Cài đặt
 
 1. Clone project
@@ -60,7 +44,7 @@ git clone https://github.com/linh0804/l-manager.git
 
 Yêu cầu:
 
-- PHP >= 8.0
+- PHP >= 7.0
 - Apache hoặc Nginx
 - Quyền ghi cho thư mục cần quản lý
 
@@ -86,7 +70,7 @@ L-Manager hỗ trợ truy cập file thông qua WebDAV.
 
 Ví dụ:
 
-https://your-domain.com/l-manager/webdav.php
+https://your-domain.com/l-manager/index.php/webdav.php
 
 Có thể kết nối bằng:
 
@@ -135,4 +119,6 @@ Dự án được phát triển cho mục đích cá nhân và có thể đượ
 
 ---
 
-Developed by Nguyen Ngoc Linh
+Developed by **Nguyen Ngoc Linh**
+
+Thanks to **Ngatngay aka Phetuyco** for inspiration and support.
