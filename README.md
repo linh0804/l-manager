@@ -112,7 +112,7 @@ git commit -m "Add new feature"
 git push origin feature/new-feature
 ```
 5. Tạo Pull Request
-```bash```
+```bash
 License
 ```
 Dự án được phát triển cho mục đích cá nhân và có thể được mở rộng theo nhu cầu sử dụng.
