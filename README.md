@@ -1,10 +1,10 @@
-L-Manager
+#L-Manager
 
 L-Manager là một trình quản lý file chạy trên nền web, hỗ trợ quản lý dữ liệu trực tiếp trên server thông qua giao diện trình duyệt.
 
 Dự án được phát triển với mục tiêu tạo một file manager nhẹ, dễ triển khai, có thể sử dụng cho hosting cá nhân hoặc server riêng.
 
-Tính năng
+###Tính năng
 
 - 📁 Quản lý thư mục và file
 - 📄 Xem nội dung file trực tiếp trên trình duyệt
@@ -18,7 +18,7 @@ Tính năng
 - 🎨 Giao diện quản lý hiện đại
 - 📱 Tương thích thiết bị di động
 
-Công nghệ sử dụng
+###Công nghệ sử dụng
 
 Backend
 
@@ -34,7 +34,7 @@ Frontend
 - jQuery
 - Highlight.js (hiển thị code)
 
-Cài đặt
+###Cài đặt
 
 1. Clone project
 ```bash
@@ -64,7 +64,7 @@ Sau đó truy cập:
 ```
 https://your-domain.com/l-manager
 ````
-WebDAV
+###WebDAV
 
 L-Manager hỗ trợ truy cập file thông qua WebDAV.
 
@@ -72,14 +72,14 @@ Ví dụ:
 ```
 https://your-domain.com/l-manager/index.php/webdav.php
 ```
-Có thể kết nối bằng:
+###Có thể kết nối bằng:
 
 - Windows Explorer
 - macOS Finder
 - Linux File Manager
 - Các ứng dụng WebDAV Client
 
-Bảo mật
+###Bảo mật
 
 Khuyến nghị:
 
@@ -88,13 +88,13 @@ Khuyến nghị:
 - Sử dụng HTTPS.
 - Không cho phép upload file thực thi PHP nếu không cần thiết.
 
-Trạng thái dự án
+###Trạng thái dự án
 
 🚧 Dự án đang trong quá trình phát triển.
 
 Các tính năng mới đang được tiếp tục bổ sung và tối ưu.
 
-Đóng góp
+###Đóng góp
 
 Nếu bạn muốn đóng góp:
 
