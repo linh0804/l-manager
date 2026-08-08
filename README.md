@@ -4,6 +4,11 @@ L-Manager là một trình quản lý file chạy trên nền web, hỗ trợ qu
 
 Dự án được phát triển với mục tiêu tạo một file manager nhẹ, dễ triển khai, có thể sử dụng cho hosting cá nhân hoặc server riêng.
 
+### Tài khoản mặc định
+
+- username: admin
+- password: !!!123456789!!!
+
 ### Tính năng
 
 - 📁 Quản lý thư mục và file
