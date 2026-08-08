@@ -37,9 +37,9 @@ Frontend
 Cài đặt
 
 1. Clone project
-
+```bash
 git clone https://github.com/linh0804/l-manager.git
-
+```
 2. Cấu hình server
 
 Yêu cầu:
@@ -49,29 +49,29 @@ Yêu cầu:
 - Quyền ghi cho thư mục cần quản lý
 
 Ví dụ:
-
+```bash
 chmod -R 755 l-manager
-
+```
 3. Cấu hình Web Server
 
 Đưa thư mục "l-manager" vào thư mục public của web server.
 
 Ví dụ:
-
+```
 /var/www/html/l-manager
-
+```
 Sau đó truy cập:
-
+```
 https://your-domain.com/l-manager
-
+````
 WebDAV
 
 L-Manager hỗ trợ truy cập file thông qua WebDAV.
 
 Ví dụ:
-
+```
 https://your-domain.com/l-manager/index.php/webdav.php
-
+```
 Có thể kết nối bằng:
 
 - Windows Explorer
@@ -100,21 +100,21 @@ Nếu bạn muốn đóng góp:
 
 1. Fork repository
 2. Tạo branch mới
-
+```bash
 git checkout -b feature/new-feature
-
+```
 3. Commit thay đổi
-
+```bash
 git commit -m "Add new feature"
-
+```
 4. Push branch
-
+```bash
 git push origin feature/new-feature
-
+```
 5. Tạo Pull Request
-
+```bash```
 License
-
+```
 Dự án được phát triển cho mục đích cá nhân và có thể được mở rộng theo nhu cầu sử dụng.
 
 ---
