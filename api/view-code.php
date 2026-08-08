@@ -69,47 +69,6 @@ if (!is_file($curr_path)) {
 } else {
     $content = file_get_contents($curr_path);
     $hightlight = highlight_string_with_line_numbers($content);
-
-    echo '<link id="classHl" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs.min.css">
-    <style>
-        pre {
-            max-height: calc(100vh - 300px) !important;
-        }
-        pre code.hljs {
-            line-height: 1.4;
-            text-align: left;
-            font-size: 13px !important;
-            padding: 0 !important;
-            padding-left: 4px !important;
-            margin: 0;
-        }
-
-        .line {
-            line-height: 1.4;
-            font-family: monospace;
-            font-size:13px !important;
-            padding-right: 5px;
-            display: block;
-            text-align: right;
-            color: #999;
-            border-right: 1px solid red;
-            background-color: #fff;
-        }
-
-        #view_code {
-            display: flex;
-        }
-
-        #code_content {
-            width: 0%;
-            flex-grow: 1;
-            overflow-x: scroll;
-        }
-
-        #code_content pre {
-            margin: 0;
-        }
-    </style>';
     echo '<div class="list" id="view_code">
         <div id="line_number">'. $hightlight['line'] .'</div>
         <div id="code_content">
@@ -139,8 +98,6 @@ if (!is_file($curr_path)) {
         </option>';
     }
     echo '</select>
-        </div>';
-
-    echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>';   
+        </div>';   
 }
 

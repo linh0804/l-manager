@@ -172,8 +172,8 @@ body {
 /* box - notif */
 #toast-container {
     position:fixed;
-    left:20px;
-    bottom:20px;
+    right:20px;
+    top:20px;
     display:flex;
     flex-direction:column;
     gap:10px;

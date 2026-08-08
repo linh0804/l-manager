@@ -255,11 +255,70 @@ rnameButton.on('click', function(e) {
     });
 });
 
+const loadedScripts = new Set();
+function scriptKey(src) {
+    let url = new URL(src, location.href);
+    return url.pathname;
+}
 
+const loadedLinks = new Set();
+function linkKey(src) {
+    let url = new URL(src, location.href);
+    return url.pathname;
+}
+
+
+const css = `
+#view_code {
+    max-height: calc(100vh - 380px) !important;
+    z-index: 8000;
+    position: stiky;
+}
+#line_number {
+    max-height: calc(100vh - 380px) !important;
+    overflow: hidden;
+}
+pre code.hljs {
+    line-height: 1.4;
+    text-align: left;
+    font-size: 13px !important;
+    padding: 0 !important;
+    padding-left: 4px !important;
+    margin: 0;
+}
+
+.line {
+    line-height: 1.4;
+    font-family: monospace;
+    font-size: 13px !important;
+    padding-right: 5px;
+    display: block;
+    text-align: right;
+    color: #999;
+    border-right: 1px solid red;
+    background-color: #fff;
+}
+
+#view_code {
+    display: flex;
+}
+
+#code_content {
+    width: 0%;
+    flex-grow: 1;
+    overflow-x: scroll;
+}
+
+#code_content pre {
+    margin: 0;
+}
+`;
 
 // menu-file
 let currentMenu = null;
 let currentView = null;
+let addHead = false;
+let addScript = false;
 
 $(".more-btn").on("click", function(e) {
     e.stopPropagation();
@@ -342,8 +401,7 @@ $(".more-btn").on("click", function(e) {
         currentView = boxView;
     });
 
-
-     box.on('click', '.boxViewCode', function () {
+    box.on('click', '.boxViewCode', function () {
         if (currentView) {
             currentView.remove();
             currentView = null;
@@ -353,7 +411,74 @@ $(".more-btn").on("click", function(e) {
             url: "view-code",
             content: {'path': path}
         }, function (data) {
-           boxView.find('.box-content').html(data);
+            var links = $('<link id="classHl" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs.min.css">');
+            var href = links.attr("href");
+            if (href && !addHead) {
+                let linkKeyName = linkKey(href);
+                const style = document.createElement("style");
+                style.id = "code-style";
+                style.textContent = css;
+                document.head.appendChild(style);
+                if (!loadedLinks.has(linkKeyName) && !addHead) {
+                    loadedLinks.add(linkKeyName);
+                    $("head").append(links);
+                    addHead = true;
+                }
+            }
+
+
+            var html = $(data)
+                .not("script")
+                .not("link");
+
+            boxView.find('.box-content').html(html);
+
+            var scripts = $('<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>');
+
+            let src = scripts.attr("src");
+            if (src) {
+                let scriptKeyName = scriptKey(src);
+
+                if (!loadedScripts.has(scriptKeyName) && !addScript) {
+                    loadedScripts.add(scriptKeyName);
+
+                    $.getScript(src).done(function () {
+                        initHighlight();
+                    });
+                    addScript = true;
+                } else {
+                    initHighlight();
+                }
+            }
+
+            function initHighlight() {
+                hljs.configure({
+                    ignoreUnescapedHTML: true
+                });
+
+                hljs.highlightAll();
+
+                const codeElements = document.querySelector("code");
+                const elementTheme = document.querySelector("#themes");
+
+                if (elementTheme) {
+                    elementTheme.onchange = function () {
+                        var currentHref = document.getElementById("classHl").href;
+                        var newHref = currentHref.replace(/\/[^\/]*$/, "/" + this.value);
+                        document.getElementById("classHl").href = newHref + ".min.css";
+                    };
+                }
+
+                const elementCode = document.querySelector("#coder");
+
+                if (elementCode) {
+                    elementCode.onchange = function () {
+                        codeElements.className = this.value;
+                        delete codeElements.dataset.highlighted;
+                        hljs.highlightAll();          
+                    };
+                }
+            }
         });
         $("body").append(boxView);
         currentView = boxView;
@@ -370,6 +495,25 @@ $(".more-btn").on("click", function(e) {
 
     currentMenu = box;
 });
+
+
+const observer = new MutationObserver(() => {
+    let code = document.querySelector("#code_content");
+
+    if (code && !code.dataset.scrollBind) {
+        code.dataset.scrollBind = "1";
+
+        code.addEventListener("scroll", function () {
+            document.querySelector("#line_number").scrollTop = this.scrollTop;
+        });
+    }
+});
+
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
 
 $(document).on("click", function(e) {
     if (currentMenu && 
